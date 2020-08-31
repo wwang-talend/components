@@ -41,6 +41,7 @@
         <bnd-annotation.version>2.4.0</bnd-annotation.version>
         <!-- Aligned with component-parent -->
         <docker-maven-plugin.version>0.26.0</docker-maven-plugin.version>
+        <commons-codec.version>1.14</commons-codec.version> <!-- override commons-codec version from spring-boot-starter-parent -->
     </properties>
     <dependencies>
         <!-- rest service -->
