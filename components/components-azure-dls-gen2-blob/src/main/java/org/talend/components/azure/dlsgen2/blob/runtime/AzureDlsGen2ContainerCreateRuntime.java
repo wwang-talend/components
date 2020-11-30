@@ -73,7 +73,7 @@ public class AzureDlsGen2ContainerCreateRuntime extends AzureDlsGen2ContainerRun
                 LOGGER.warn(messages.getMessage("warn.ContainerExists", containerName));
             }
         } catch (BlobStorageException e) {
-            LOGGER.error(e.getLocalizedMessage());
+            LOGGER.error("[createContainer] status: {} message: {}.", e.getStatusCode(), e.getMessage());
             if (dieOnError) {
                 throw new ComponentException(e);
             }

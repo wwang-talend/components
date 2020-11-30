@@ -64,12 +64,12 @@ public class AzureDlsGen2ContainerExistRuntime extends AzureDlsGen2ContainerRunt
             return azureDlsGen2BlobService.containerExist(this.containerName);
 
         } catch (BlobStorageException e) {
-            LOGGER.error(e.getLocalizedMessage());
+            LOGGER.error("[containerExist] status: {} message: {}.", e.getStatusCode(), e.getMessage());
             if (this.dieOnError) {
                 throw new ComponentException(e);
             }
-            return false;
         }
+        return false;
     }
 
     private void setReturnValues(RuntimeContainer runtimeContainer, boolean containerExist) {

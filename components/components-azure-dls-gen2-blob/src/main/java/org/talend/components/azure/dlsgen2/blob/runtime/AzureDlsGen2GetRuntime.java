@@ -17,7 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.models.BlobStorageException;
@@ -132,7 +131,7 @@ public class AzureDlsGen2GetRuntime extends AzureDlsGen2ContainerRuntime
         } catch (BlobStorageException | FileNotFoundException e) {
             if (BlobStorageException.class.isInstance(e)) {
                 LOGGER.error("[download] status: {} message: {}.", BlobStorageException.class.cast(e)
-                        .getStatusCode(), Map.class.cast(BlobStorageException.class.cast(e).getValue()).get("Message"));
+                        .getStatusCode(), BlobStorageException.class.cast(e).getMessage());
             } else {
                 LOGGER.error(e.getLocalizedMessage());
             }

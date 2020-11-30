@@ -27,10 +27,10 @@
       <groupId>com.azure</groupId>
       <artifactId>azure-identity</artifactId>
       <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-          </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>org.linguafranca.pwdb</groupId>
           <artifactId>KeePassJava2</artifactId>
@@ -47,6 +47,18 @@
       <version>1.7.1</version>
     </dependency>
     <!-- others -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.talend.components</groupId>
       <artifactId>components-common</artifactId>
@@ -223,13 +235,36 @@
                 <Require-Capability>osgi.ee;filter:="(&amp;(osgi.ee=JavaSE)(version=1.7))"</Require-Capability>
                 <Bundle-SymbolicName>org.talend.components.azure-dls-gen2-blob</Bundle-SymbolicName>
                 <Service-Component>*</Service-Component>
-                <Embed-Dependency>*;artifactId=!components*|commons-lang3*|jackson-core*;scope=compile|runtime;inline=false;
-                </Embed-Dependency>
-                <Include-Resource>
-                  {maven-resources},META-INF/maven/${project.groupId}/${project.artifactId}/dependencies.txt=target/classes/META-INF/maven/${project.groupId}/${project.artifactId}/dependencies.txt
-                </Include-Resource>
+                <Embed-Dependency>*;artifactId=!components*|commons-lang3*|jackson-core*|slf4j-*;scope=compile|runtime;inline=false;</Embed-Dependency>
+                <Include-Resource>{maven-resources},META-INF/maven/${project.groupId}/${project.artifactId}/dependencies.txt=target/classes/META-INF/maven/${project.groupId}/${project.artifactId}/dependencies.txt</Include-Resource>
                 <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
-                <Import-Package>!com.google.crypto.tink*,!com.google.protobuf*,!com.ning.*,!com.oracle.*,!com.sun.*,!org.eclipse.jetty.*,!io.*,!javax.annotation.*,!kotlin.*,!org.jetbrain.*,!lombok.*,!lzma.*,!net.jpountz.*,!net.shibboleth.utilities.java.support.xml*,!org.bouncycastle.*,!org.conscrypt.*,!org.linguafranca.*,!org.jboss.*,!org.w3c.*,!org.cryptomator.siv.*,!org.opensaml.*,!reactor.*,!sun.*,!org.apache.logging.*,*</Import-Package>
+                <Import-Package>
+                  !com.google.crypto.tink*,
+                  !com.google.protobuf*,
+                  !com.ibm.uvm.tools.*,
+                  !com.ning.*,
+                  !com.oracle.*,
+                  !com.sun.*,
+                  !javax.*,
+                  !kotlin.*,
+                  !lombok.*,
+                  !lzma.*,
+                  !net.jpountz.*,
+                  !net.shibboleth.utilities.java.support.xml*,
+                  !org.apache.logging.*,
+                  !org.bouncycastle.*,
+                  !org.conscrypt.*,
+                  !org.cryptomator.siv.*,
+                  !org.eclipse.jetty.*,!io.*,
+                  !org.jboss.*,
+                  !org.jetbrain.*,
+                  !org.linguafranca.*,
+                  !org.opensaml.*,
+                  !org.w3c.*,
+                  !reactor.*,
+                  !sun.*,
+                  *
+                </Import-Package>
                 <Embed-Transitive>true</Embed-Transitive>
               </instructions>
             </configuration>

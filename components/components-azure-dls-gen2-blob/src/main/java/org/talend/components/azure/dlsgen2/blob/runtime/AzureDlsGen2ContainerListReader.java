@@ -65,7 +65,7 @@ public class AzureDlsGen2ContainerListReader extends AzureDlsGen2Reader<IndexedR
             containers = blobService.listContainers().iterator();
             startable = containers.hasNext();
         } catch (BlobStorageException e) {
-            LOGGER.error(e.getLocalizedMessage());
+            LOGGER.error("[start] status: {} message: {}.", e.getStatusCode(), e.getMessage());
             if (properties.dieOnError.getValue()) {
                 throw new ComponentException(e);
             } else {

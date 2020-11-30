@@ -17,6 +17,16 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.HttpResponse;
 import com.azure.storage.blob.models.BlobStorageException;
 
 import org.junit.Before;
@@ -44,6 +54,8 @@ public class AzureStorageContainerExistRuntimeTest {
 
     private AzureDlsGen2ContainerExistRuntime existContainer;
 
+    private BlobStorageException storageException;
+
     @Mock
     private AzureDlsGen2BlobService blobService;
 
@@ -62,6 +74,46 @@ public class AzureStorageContainerExistRuntimeTest {
 
         runtimeContainer = new RuntimeContainerMock();
         this.existContainer = new AzureDlsGen2ContainerExistRuntime();
+        storageException = new BlobStorageException("storage exception message", new HttpResponse(null) {
+
+            @Override
+            public int getStatusCode() {
+                return 500;
+            }
+
+            @Override
+            public String getHeaderValue(String name) {
+                return "headers.getValue(name)";
+            }
+
+            @Override
+            public HttpHeaders getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("x-ms-error-code", "500");
+                return new HttpHeaders(headers);
+            }
+
+            @Override
+            public Flux<ByteBuffer> getBody() {
+                return Flux.empty();
+            }
+
+            @Override
+            public Mono<byte[]> getBodyAsByteArray() {
+                return Mono.just(new byte[0]);
+            }
+
+            @Override
+            public Mono<String> getBodyAsString() {
+                return Mono.just("");
+            }
+
+            @Override
+            public Mono<String> getBodyAsString(Charset charset) {
+                return Mono.just("");
+            }
+
+        }, new RuntimeException());
     }
 
     @Test
@@ -90,8 +142,7 @@ public class AzureStorageContainerExistRuntimeTest {
         existContainer.azureDlsGen2BlobService = blobService;
         // Handle Storage exception
         try {
-            when(blobService.containerExist(anyString()))
-                    .thenThrow(new BlobStorageException("storage exception message", null, new RuntimeException()));
+            when(blobService.containerExist(anyString())).thenThrow(storageException);
             existContainer.runAtDriver(runtimeContainer);
 
         } catch (BlobStorageException e) {
@@ -109,8 +160,7 @@ public class AzureStorageContainerExistRuntimeTest {
         existContainer.azureDlsGen2BlobService = blobService;
 
         try {
-            when(blobService.containerExist(anyString()))
-                    .thenThrow(new BlobStorageException("storage exception message", null, new RuntimeException()));
+            when(blobService.containerExist(anyString())).thenThrow(storageException);
             existContainer.runAtDriver(runtimeContainer);
         } catch (BlobStorageException e) {
             fail("should not throw exception " + e.getMessage());

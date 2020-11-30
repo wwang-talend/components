@@ -107,7 +107,7 @@ public class AzureDlsGen2DeleteRuntime extends AzureDlsGen2ContainerRuntime
                     .sorted(comparator.reversed())
                     .forEach(folder -> azureDlsGen2BlobService.deleteBlob(containerName, folder));
         } catch (BlobStorageException e) {
-            LOGGER.error(e.getLocalizedMessage());
+                LOGGER.error("[delete] status: {} message: {}.", e.getStatusCode(), e.getMessage());
             if (dieOnError) {
                 throw new ComponentException(e);
             }

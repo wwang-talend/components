@@ -69,6 +69,8 @@ public class AzureStoragePutRuntimeTest {
 
     private AzureDlsGen2PutRuntime storagePut;
 
+    private BlobStorageException storageException;
+
     @Mock
     private AzureDlsGen2BlobService blobService;
 
@@ -76,8 +78,6 @@ public class AzureStoragePutRuntimeTest {
     public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     private String localFolderPath;
-
-    private BlobStorageException storageException;
 
     @Before
     public void setup() throws IOException {

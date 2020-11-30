@@ -18,11 +18,20 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import com.azure.core.http.HttpHeaders;
+import com.azure.core.http.HttpResponse;
 import com.azure.core.http.rest.PagedFlux;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.storage.blob.models.BlobItem;
@@ -53,6 +62,8 @@ public class AzureStorageDeleteRuntimeTest {
 
     private AzureDlsGen2DeleteRuntime deleteBlock;
 
+    private BlobStorageException storageException;
+
     @Mock
     private AzureDlsGen2BlobService blobService;
 
@@ -73,6 +84,46 @@ public class AzureStorageDeleteRuntimeTest {
 
         runtimeContainer = new RuntimeContainerMock();
         this.deleteBlock = new AzureDlsGen2DeleteRuntime();
+        storageException = new BlobStorageException("storage exception message", new HttpResponse(null) {
+
+            @Override
+            public int getStatusCode() {
+                return 500;
+            }
+
+            @Override
+            public String getHeaderValue(String name) {
+                return "headers.getValue(name)";
+            }
+
+            @Override
+            public HttpHeaders getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("x-ms-error-code", "500");
+                return new HttpHeaders(headers);
+            }
+
+            @Override
+            public Flux<ByteBuffer> getBody() {
+                return Flux.empty();
+            }
+
+            @Override
+            public Mono<byte[]> getBodyAsByteArray() {
+                return Mono.just(new byte[0]);
+            }
+
+            @Override
+            public Mono<String> getBodyAsString() {
+                return Mono.just("");
+            }
+
+            @Override
+            public Mono<String> getBodyAsString(Charset charset) {
+                return Mono.just("");
+            }
+
+        }, new RuntimeException());
     }
 
     @Test
@@ -160,8 +211,7 @@ public class AzureStorageDeleteRuntimeTest {
         deleteBlock.azureDlsGen2BlobService = blobService;
 
         try {
-            when(blobService.listBlobs(anyString(), anyString(), anyBoolean()))
-                    .thenThrow(new BlobStorageException("dummy message", null, new RuntimeException()));
+            when(blobService.listBlobs(anyString(), anyString(), anyBoolean())).thenThrow(storageException);
             deleteBlock.runAtDriver(runtimeContainer);
 
         } catch (BlobStorageException e) {
@@ -179,8 +229,7 @@ public class AzureStorageDeleteRuntimeTest {
         deleteBlock.azureDlsGen2BlobService = blobService;
         // prepare test data and mocks
         try {
-            when(blobService.listBlobs(anyString(), anyString(), anyBoolean()))
-                    .thenThrow(new BlobStorageException("dummy message", null, new RuntimeException()));
+            when(blobService.listBlobs(anyString(), anyString(), anyBoolean())).thenThrow(storageException);
             deleteBlock.runAtDriver(runtimeContainer);
         } catch (BlobStorageException e) {
             fail("should not throw " + e.getMessage());

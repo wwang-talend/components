@@ -27,7 +27,7 @@ import org.talend.daikon.runtime.RuntimeInfo;
  */
 public abstract class AzureDlsGen2Definition extends AbstractComponentDefinition {
 
-    public static final String MAVEN_ARTIFACT_ID = "components-azure-dsl-gen2-blob";
+    public static final String MAVEN_ARTIFACT_ID = "components-azure-dls-gen2-blob";
 
     public static final String MAVEN_GROUP_ID = "org.talend.components";
 

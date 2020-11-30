@@ -128,9 +128,8 @@ public class AzureDlsGen2PutRuntime extends AzureDlsGen2ContainerRuntime
 
             } catch (BlobStorageException | IOException e) {
                 if (BlobStorageException.class.isInstance(e)) {
-                    LOGGER.error("[upload] status: {} message: {}.", BlobStorageException.class.cast(e)
-                            .getStatusCode(), Map.class.cast(BlobStorageException.class.cast(e).getValue())
-                                         .get("Message"));
+                    LOGGER.error("[put] status: {} message: {}.", BlobStorageException.class.cast(e)
+                            .getStatusCode(), BlobStorageException.class.cast(e).getMessage());
                 } else {
                     LOGGER.error(e.getLocalizedMessage());
                 }

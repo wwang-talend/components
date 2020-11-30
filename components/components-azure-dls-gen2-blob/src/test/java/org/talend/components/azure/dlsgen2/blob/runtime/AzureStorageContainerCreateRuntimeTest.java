@@ -65,6 +65,8 @@ public class AzureStorageContainerCreateRuntimeTest {
 
     private AzureDlsGen2ContainerCreateRuntime containerCreate;
 
+    private BlobStorageException storageException;
+
     @Mock
     private AzureDlsGen2BlobService blobService;
 
@@ -84,6 +86,47 @@ public class AzureStorageContainerCreateRuntimeTest {
 
         runtimeContainer = new RuntimeContainerMock();
         this.containerCreate = new AzureDlsGen2ContainerCreateRuntime();
+
+        storageException = new BlobStorageException("storage exception message", new HttpResponse(null) {
+
+            @Override
+            public int getStatusCode() {
+                return 500;
+            }
+
+            @Override
+            public String getHeaderValue(String name) {
+                return "headers.getValue(name)";
+            }
+
+            @Override
+            public HttpHeaders getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("x-ms-error-code", "500");
+                return new HttpHeaders(headers);
+            }
+
+            @Override
+            public Flux<ByteBuffer> getBody() {
+                return Flux.empty();
+            }
+
+            @Override
+            public Mono<byte[]> getBodyAsByteArray() {
+                return Mono.just(new byte[0]);
+            }
+
+            @Override
+            public Mono<String> getBodyAsString() {
+                return Mono.just("");
+            }
+
+            @Override
+            public Mono<String> getBodyAsString(Charset charset) {
+                return Mono.just("");
+            }
+
+        }, new RuntimeException());
     }
 
     @Test
@@ -146,47 +189,8 @@ public class AzureStorageContainerCreateRuntimeTest {
 
         try {
 
-            when(blobService.createContainerIfNotExist(anyString(), any(PublicAccessType.class))).thenThrow(
-                    new BlobStorageException("storage exception message", new HttpResponse(null) {
-
-                        @Override
-                        public int getStatusCode() {
-                            return 500;
-                        }
-
-                        @Override
-                        public String getHeaderValue(String name) {
-                            return "headers.getValue(name)";
-                        }
-
-                        @Override
-                        public HttpHeaders getHeaders() {
-                            Map<String, String> headers = new HashMap<>();
-                            headers.put("x-ms-error-code", "500");
-                            return new HttpHeaders(headers);
-                        }
-
-                        @Override
-                        public Flux<ByteBuffer> getBody() {
-                            return Flux.empty();
-                        }
-
-                        @Override
-                        public Mono<byte[]> getBodyAsByteArray() {
-                            return Mono.just(new byte[0]);
-                        }
-
-                        @Override
-                        public Mono<String> getBodyAsString() {
-                            return Mono.just("");
-                        }
-
-                        @Override
-                        public Mono<String> getBodyAsString(Charset charset) {
-                            return Mono.just("");
-                        }
-
-                    }, new RuntimeException()));
+            when(blobService.createContainerIfNotExist(anyString(), any(PublicAccessType.class)))
+                    .thenThrow(storageException);
             containerCreate.runAtDriver(runtimeContainer);
 
         } catch (BlobStorageException e) {
@@ -206,9 +210,7 @@ public class AzureStorageContainerCreateRuntimeTest {
         containerCreate.blobService = blobService;
 
         try {
-            when(blobService.createContainerIfNotExist(anyString(), any(PublicAccessType.class)))
-                    .thenThrow(
-                            new BlobStorageException("storage exception message", null, new RuntimeException()));
+            when(blobService.createContainerIfNotExist(anyString(), any(PublicAccessType.class))).thenThrow(storageException);
             containerCreate.runAtDriver(runtimeContainer);
 
         } catch (BlobStorageException e) {
