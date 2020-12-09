@@ -66,11 +66,12 @@ spec:
     stage('Compile') {
       steps {
           container('main') {
-             sh 'mvn clean compile'
+             sh 'mvn clean -B -U -V install'
           }
       }
     }
 
+    /*
     stage('Test') {
       steps {
           container('main') {
@@ -78,6 +79,7 @@ spec:
           }
       }
     }
+    */
 
     //stage('Deploy') {
      // steps {
