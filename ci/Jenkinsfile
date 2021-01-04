@@ -13,6 +13,11 @@ def dockerCredentials = usernamePassword(
     passwordVariable: 'DOCKER_PASSWORD',
     usernameVariable: 'DOCKER_LOGIN')
 
+def artifactoryCredentials = usernamePassword(
+  credentialsId: 'artifactory-datapwn-credentials',
+    passwordVariable: 'ARTIFACTORY_PASSWORD',
+    usernameVariable: 'ARTIFACTORY_LOGIN')
+
 def branch = env.BRANCH_NAME
 def repo = 'components'
 def slackChannel = 'components-ci'
@@ -54,6 +59,11 @@ spec:
         }
     }
 
+  environment {
+    MAVEN_OPTS = "-Dmaven.artifact.threads=128 -Dorg.slf4j.simpleLogger.showThreadName=true -Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss -Dtalend.maven.decrypter.m2.location=${WORKSPACE}/.jenkins/"
+    TALEND_REGISTRY_OLD = "registry.datapwn.com"
+  }
+
   options {
     timeout(time: 120, unit: 'MINUTES')
     skipStagesAfterUnstable()
@@ -61,39 +71,45 @@ spec:
     disableConcurrentBuilds()
   }
 
+  parameters {
+    choice(name: 'Action',
+            choices: ['STANDARD', 'RELEASE'],
+            description: 'Kind of running : \nSTANDARD (default), normal building \nRELEASE : build release')
+  }
+
   stages {
 
-    stage('Compile') {
+    stage('Compile | Test') {
+      when {
+        expression { params.Action == 'STANDARD' }
+      }
       steps {
+        withCredentials([gitCredentials, nexusCredentials, dockerCredentials, artifactoryCredentials]) {
           container('main') {
-             sh 'mvn clean -B -U -V install'
+            sh "echo $DOCKER_PASSWORD | docker login ${TALEND_REGISTRY_OLD} -u $DOCKER_LOGIN --password-stdin"
+            sh 'mvn clean -B -U -V install'
           }
+        }
       }
     }
 
-    /*
-    stage('Test') {
+    stage('Compile | Test | Deploy') {
+      when {
+        expression { params.Action == 'RELEASE' }
+      }
       steps {
-          container('main') {
-             sh 'mvn test'
-          }
+        container('main') {
+          sh """
+              mvn clean -B -U -V -s ci/settings.xml deploy
+            """
+          // -Dgit_branch="${escaped_branch}" \
+          // -Dbigquery.project="${bigquery_project}" \
+          // -Dbigquery.service.account.file="${service_account_file}" \
+          // -Dbigquery.gcp.temp.folder="${bigquery_gcp_temp_folder}" \
+          // -Dorg.talend.components.google.drive.service_account_file="${google_drive_service_account_file}"
+        }
       }
     }
-    */
-
-    //stage('Deploy') {
-     // steps {
-    //    sh """
-     //       mvn -B -U -V 
-     //      """
-              // deploy
-              // -Dgit_branch="${escaped_branch}" \
-              // -Dbigquery.project="${bigquery_project}" \
-              // -Dbigquery.service.account.file="${service_account_file}" \
-              // -Dbigquery.gcp.temp.folder="${bigquery_gcp_temp_folder}" \
-              // -Dorg.talend.components.google.drive.service_account_file="${google_drive_service_account_file}" 
-   //   }
-   // }
   }
 
   post {
