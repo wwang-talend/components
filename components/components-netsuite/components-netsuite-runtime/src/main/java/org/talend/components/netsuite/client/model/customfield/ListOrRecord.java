@@ -48,7 +48,6 @@ public class ListOrRecord {
         this.externalId = externalId;
     }
 
-
     public String getTypeId() {
         return typeId;
     }
